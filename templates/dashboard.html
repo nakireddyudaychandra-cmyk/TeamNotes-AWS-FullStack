@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Your Dashboard</h1>
+<div class="tiles">
+  <div class="tile"><div class="num">{{ counts.get('open',0) }}</div><div>Open</div></div>
+  <div class="tile"><div class="num">{{ counts.get('in-progress',0) }}</div><div>In Progress</div></div>
+  <div class="tile"><div class="num">{{ counts.get('done',0) }}</div><div>Done</div></div>
+</div>
+<div class="grid">
+  <section class="card"><h2>New Note</h2>
+    <form method="post" action="{{ url_for('new_note') }}" enctype="multipart/form-data">
+      <label>Title<input name="title" required></label>
+      <label>Body<textarea name="body" rows="3"></textarea></label>
+      <label>Status<select name="status">
+        <option value="open">Open</option><option value="in-progress">In Progress</option>
+        <option value="done">Done</option></select></label>
+      <label>Due date<input type="date" name="due_date"></label>
+      <label>Attachment<input type="file" name="attachment"></label>
+      <button class="btn primary" type="submit">Add Note</button>
+    </form></section>
+  <section class="card"><h2>Recent Activity</h2>
+    <ul class="activity">
+      {% for a in activity %}<li><span class="badge">{{ a.action }}</span> {{ a.detail }}
+        <span class="muted">- {{ a.timestamp }}</span></li>
+      {% else %}<li class="muted">No activity yet.</li>{% endfor %}
+    </ul></section>
+</div>
+<section class="card">
+  <div class="row-between"><h2>Your Notes</h2>
+    <form method="get" class="filters">
+      <input name="q" value="{{ q }}" placeholder="Search...">
+      <select name="status">
+        <option value="">All</option>
+        <option value="open" {{ 'selected' if status=='open' }}>Open</option>
+        <option value="in-progress" {{ 'selected' if status=='in-progress' }}>In Progress</option>
+        <option value="done" {{ 'selected' if status=='done' }}>Done</option></select>
+      <button class="btn" type="submit">Filter</button></form>
+  </div>
+  <table class="notes"><thead><tr><th>Title</th><th>Status</th><th>Due</th><th>File</th><th></th></tr></thead>
+    <tbody>
+    {% for n in notes %}<tr>
+      <td><strong>{{ n.title }}</strong><br><span class="muted">{{ n.body }}</span></td>
+      <td><span class="status {{ n.status }}">{{ n.status }}</span></td>
+      <td>{{ n.due_date or '-' }}</td>
+      <td>{% if n.s3_key %}<a href="{{ url_for('download_file', note_id=n.id) }}">{{ n.filename }}</a>{% else %}-{% endif %}</td>
+      <td class="actions">
+        <form method="post" action="{{ url_for('update_note', note_id=n.id) }}">
+          <select name="status" onchange="this.form.submit()">
+            <option {{ 'selected' if n.status=='open' }} value="open">Open</option>
+            <option {{ 'selected' if n.status=='in-progress' }} value="in-progress">In Progress</option>
+            <option {{ 'selected' if n.status=='done' }} value="done">Done</option></select></form>
+        <form method="post" action="{{ url_for('delete_note', note_id=n.id) }}"
+              onsubmit="return confirm('Delete this note?')">
+          <button class="btn danger" type="submit">Delete</button></form>
+      </td></tr>
+    {% else %}<tr><td colspan="5" class="muted">No notes yet. Create one above.</td></tr>{% endfor %}
+    </tbody></table>
+</section>{% endblock %}

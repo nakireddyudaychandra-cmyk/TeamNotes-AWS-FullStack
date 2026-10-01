@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeamNotes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+  <nav class="navbar"><div class="brand">TeamNotes</div>
+    <div class="nav-links">
+      {% if session.get('username') %}
+        <span class="hello">Hi, {{ session['username'] }}</span>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+      {% endif %}
+    </div></nav>
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="flash">
+        {% for m in messages %}<div>{{ m }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">TeamNotes - deployed on AWS Elastic Beanstalk</footer>
+</body></html>
